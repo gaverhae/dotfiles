@@ -1,0 +1,19 @@
+[user]
+	email = gary.verhaegen@gmail.com
+	name = Gary Verhaegen
+[color]
+	status = auto
+	branch = auto
+	diff = auto
+[core]
+	excludesfile = /Users/gary/.gitexclude
+	editor = vim
+	eol = native
+[merge]
+	tool = vimdiff
+	conflictstyle = diff3
+	summary = true
+[alias]
+	hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+[push]
+	default = tracking
