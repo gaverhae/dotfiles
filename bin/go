@@ -22,12 +22,12 @@ _diff() (
     h=$HOME/.${file:2}
     if [ -f "$h" ]; then
       if diff -q dot/${file:2} $h >/dev/null; then
-        echo ". ${file:2}"
+        echo ". .${file:2}"
       else
-        echo "c ${file:2}"
+        echo "c .${file:2}"
       fi
     else
-      echo "m ${file:2}"
+      echo "m .${file:2}"
     fi
   done
 )
