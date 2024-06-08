@@ -1,8 +1,0 @@
-let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =6
-let g:netrw_dirhist_1='/Users/gary/Documents/unif/assist/2012-2013/INFO-H-200/TPs/corriges/engine'
-let g:netrw_dirhist_2='/private/tmp/temp/delete-me-too/.git'
-let g:netrw_dirhist_3='/Users/gary/ena/consult/huawei/smartswitch/scolox/refs/CEP/the-situation-manager-component-of-amit-active-middleware-technology'
-let g:netrw_dirhist_4='/Users/gary/ena/consult/huawei/smartswitch/.git/modules'
-let g:netrw_dirhist_5='/Users/gary/ena/consult/huawei/misc/cayuga/.git'
-let g:netrw_dirhist_6='/Volumes/APACER'
