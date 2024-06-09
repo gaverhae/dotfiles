@@ -13,7 +13,6 @@ where cmd is one of:
 help     Displays this help text.
 diff     Lists each managed file that differs.
 sync     Replaces files in this repos with links to \$HOME.
-install  Replaces files in \$HOME with links to this repo.
 EOF
 )
 
@@ -33,11 +32,12 @@ _diff() (
 )
 
 _sync() (
-  todo
-)
-
-_install() (
-  todo
+  for f in $(cd dot; find . -type f); do
+    h=$HOME/.${f:2}
+    touch $h
+    rm dot/${f:2}
+    ln $h dot/${f:2}
+  done
 )
 
 _main() (
