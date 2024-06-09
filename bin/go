@@ -46,7 +46,7 @@ _main() (
       _$1
       ;;
     *)
-      help
+      _help
       exit 1
       ;;
   esac
