@@ -25,13 +25,13 @@ compinit
 HISTFILE=~/.histfile
 HISTSIZE=1000000
 SAVEHIST=1000000
-setopt appendhistory autocd beep extendedglob nomatch
+setopt INC_APPEND_HISTORY_TIME noautocd beep extendedglob nomatch
 unsetopt notify
-bindkey -v
-# End of lines configured by zsh-newuser-install
 
-source ~/.env_vars
-source ~/.bash_aliases
+bindkey -v
+bindkey -M vicmd "/" history-incremental-pattern-search-backward
+bindkey -M vicmd "?" history-incremental-pattern-search-forward
+# End of lines configured by zsh-newuser-install
 
 unsetopt sharehistory
 bindkey '^?' backward-delete-char
@@ -43,7 +43,7 @@ zle -N history-beginning-search-forward-end \
 bindkey '^[[A' history-beginning-search-backward-end
 bindkey '^[[B' history-beginning-search-forward-end
 
-setopt incappendhistory histignorealldups histfindnodups
+setopt incappendhistory histignorealldups histfindnodups histignorespace
 
 autoload -U colors
 colors
@@ -52,44 +52,67 @@ foreach cmd (locate find wget)
     alias $cmd="noglob $cmd"
 end
 
-
-function hg_prompt_info {
-    hg prompt --angle-brackets "\
-< on %{$fg[magenta]%}<branch>%{$reset_color%}>\
-< at %{$fg[yellow]%}<tags|%{$reset_color%}, %{$fg[yellow]%}>%{$reset_color%}>\
-%{$fg[green]%}<status|modified|unknown><update>%{$reset_color%}<\
-patches: <patches|join( → )|pre_applied(%{$fg[yellow]%})|post_applied(%{$reset_color%})|pre_unapplied(%{$fg_bold[black]%})|post_unapplied(%{$reset_color%})>>" 2>/dev/null
-}
-
 function box_name {
     [ -f ~/.box-name ] && cat ~/.box-name || hostname -s
 }
 
 setopt PROMPT_SUBST
-PROMPT=$'%{$fg[green]%}[%T]%{$reset_color%}%{$fg_bold[green]%}%n%{$reset_color%}@%{$fg_bold[blue]%}%~%{$reset_color%}$(hg_prompt_info)
-%{$fg_bold[yellow]%}[%h]%{$reset_color%}$ '
+PROMPT=$'%{$fg[green]%}[%T]%{$reset_color%}%{$fg_bold[green]%}%n%{$reset_color%}@%{$fg[yellow]%}$(box_name)%{$reset_color%}%{$fg_bold[blue]%}%~%{$reset_color%}
+$ '
 
-#export GPG_AGENT_INFO_FILE=$HOME/.gpg-agent-info
-#gpg-agent --daemon --enable-ssh-support --write-env-file "${GPG_AGENT_INFO_FILE}"
-#
-#if [ -f "${GPG_AGENT_INFO_FILE}" ]; then
-#    . "${GPG_AGENT_INFO_FILE}"
-#    export GPG_AGENT_INFO
-#    export SSH_AUTH_SOCK
-#    export SSH_AGENT_PID
-#fi
+eval "$($HOME/.env_vars)"
+alias ls="ls --color=auto"
+alias grep="grep --color=auto"
+eval "$(direnv hook zsh)"
 
-if [ $EUID -ne 0 ] ; then
-    envfile="$HOME/.gnupg/gpg-agent.env"
-    if [[ -e "$envfile" ]] && kill -0 $(grep GPG_AGENT_INFO "$envfile" | cut -d: -f 2) 2>/dev/null; then
-        eval "$(cat "$envfile")"
-    else
-        eval "$(gpg-agent --daemon --enable-ssh-support --write-env-file "$envfile")"
-    fi
-    export GPG_AGENT_INFO  # the env file does not contain the export statement
-    export SSH_AUTH_SOCK   # enable gpg-agent for ssh
+# ensure compatibility tmux <-> direnv
+if [ -n "$TMUX" ] && [ -n "$DIRENV_DIR" ]; then
+  for e in $(env | grep -i direnv | sed 's/\([^=]*\)=.*/\1/'); do
+    unset $e
+  done
 fi
+eval "$(direnv hook zsh)"
 
-export GPG_TTY=$(tty)
+gc() {
+  local branch sha
+  branch=$1
+  sha=$(git rev-parse $branch)
+  ref=${2:-main}
+  if [ -z "$(git status --porcelain)" ]; then
+    git checkout $ref
+    git pull
+    git checkout $branch
+    git reset --soft $(git merge-base HEAD $ref)
+    git commit -m "replace with $sha"
+    if git rebase $ref; then
+      if git diff --exit-code $ref >/dev/null; then
+        git checkout $ref
+        git branch -d $branch
+        echo "Branch deleted; remaining branches:"
+        git branch
+      else
+        echo "Branch rebases cleanly, but has unmerged changes"
+        git reset --hard $sha
+        git checkout $ref
+        echo "Remaining branches:"
+        git branch
+      fi
+    else
+      git rebase --abort
+      git checkout $branch
+      git reset --hard $sha
+      git checkout $ref
+      echo "Failed to gc, branch does not rebase cleanly."
+    fi
+    else
+      echo "Working tree not clean, not doing anything."
+  fi
+}
 
-export JAVA_HOME=$(/usr/libexec/java_home)
+_gc() {
+    branches=($(git for-each-ref --format='%(refname:short)' 'refs/heads/*'))
+    _arguments "1: :($branches)"
+}
+compdef _gc gc
+
+if [ -e /Users/gary/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/gary/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
