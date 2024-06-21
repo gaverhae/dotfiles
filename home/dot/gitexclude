@@ -1,13 +1,1 @@
-*.svn
-*.log
-*.out
-*.bbl
-*.blg
-*.xac
-*.aux
 .DS_Store
-.svn
-.hg
-*~
-tags
-*.class
