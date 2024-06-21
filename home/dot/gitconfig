@@ -1,19 +1,37 @@
 [user]
-	email = gary.verhaegen@gmail.com
-	name = Gary Verhaegen
+    email = gary.verhaegen@gmail.com
+    name = Gary Verhaegen
 [color]
-	status = auto
-	branch = auto
-	diff = auto
+    status = auto
+    branch = auto
+    diff = auto
 [core]
-	excludesfile = /Users/gary/.gitexclude
-	editor = vim
-	eol = native
+    excludesfile = ~/.gitexclude
+    editor = vim
+    eol = native
 [merge]
-	tool = vimdiff
-	conflictstyle = diff3
-	summary = true
+    tool = vimdiff
+    conflictstyle = diff3
+    summary = true
 [alias]
-	hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+    ca = commit --amend --reset-author --no-edit
+    pf = push --force-with-lease
 [push]
-	default = tracking
+    default = current
+    autoSetupRemote = true
+[rebase]
+    autoSquash = true
+[fetch]
+    prune = true
+[rerere]
+    enabled = true
+[pull]
+    ff = only
+    default = current
+[init]
+    defaultBranch = main
+[diff]
+    colorMoved = zebra
+    colorMovedWS = allow-indentation-change
+[log]
+    date = iso
