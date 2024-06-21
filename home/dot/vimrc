@@ -1,7 +1,8 @@
-filetype off
-call pathogen#runtime_append_all_bundles()
-call pathogen#helptags()
+runtime bundle/vim-pathogen/autoload/pathogen.vim
+execute pathogen#infect()
+syntax on
 filetype plugin indent on
+
 set nocompatible
 set modelines=0
 let mapleader = ","
@@ -17,7 +18,6 @@ set shell=bash\ -l
 
 " Colorscheme
 set t_Co=256
-syntax enable
 set background=dark
 let g:solarized_termcolors=256
 let g:solarized_termtrans=0
@@ -63,10 +63,10 @@ set termencoding=utf-8
 set backspace=indent,eol,start
 "set relativenumber
 set number
-set history=1000		" keep 50 lines of command line history
-set ruler		" show the cursor position all the time
-set showcmd		" display incomplete commands
-set incsearch		" do incremental searching
+set history=1000        " keep 50 lines of command line history
+set ruler       " show the cursor position all the time
+set showcmd     " display incomplete commands
+set incsearch       " do incremental searching
 if has("autocmd")
   augroup vimrcEx
   au!
@@ -81,40 +81,40 @@ else
 endif
 set backup
 function! InitBackupDir()
-	let separator = "."
-	let parent = $HOME .'/' . separator . 'vim/'
-	let backup = parent . 'backup/'
-	let tmp    = parent . 'tmp/'
-	if exists("*mkdir")
-		if !isdirectory(parent)
-			call mkdir(parent)
-		endif
-		if !isdirectory(backup)
-			call mkdir(backup)
-		endif
-		if !isdirectory(tmp)
-			call mkdir(tmp)
-		endif
-	endif
-	let missing_dir = 0
-	if isdirectory(tmp)
-		execute 'set backupdir=' . escape(backup, " ") . "/,."
-	else
-		let missing_dir = 1
-	endif
-	if isdirectory(backup)
-		execute 'set directory=' . escape(tmp, " ") . "/,."
-	else
-		let missing_dir = 1
-	endif
-	if missing_dir
-		echo "Warning: Unable to create backup directories: "
-		. backup ." and " . tmp
-		echo "Try: mkdir -p " . backup
-		echo "and: mkdir -p " . tmp
-		set backupdir=.
-		set directory=.
-	endif
+    let separator = "."
+    let parent = $HOME .'/' . separator . 'vim/'
+    let backup = parent . 'backup/'
+    let tmp    = parent . 'tmp/'
+    if exists("*mkdir")
+        if !isdirectory(parent)
+            call mkdir(parent)
+        endif
+        if !isdirectory(backup)
+            call mkdir(backup)
+        endif
+        if !isdirectory(tmp)
+            call mkdir(tmp)
+        endif
+    endif
+    let missing_dir = 0
+    if isdirectory(tmp)
+        execute 'set backupdir=' . escape(backup, " ") . "/,."
+    else
+        let missing_dir = 1
+    endif
+    if isdirectory(backup)
+        execute 'set directory=' . escape(tmp, " ") . "/,."
+    else
+        let missing_dir = 1
+    endif
+    if missing_dir
+        echo "Warning: Unable to create backup directories: "
+        . backup ." and " . tmp
+        echo "Try: mkdir -p " . backup
+        echo "and: mkdir -p " . tmp
+        set backupdir=.
+        set directory=.
+    endif
 endfunction
 call InitBackupDir()
 if has("autocmd")
@@ -138,25 +138,19 @@ autocmd! BufNewFile,BufRead *.json set ft=javascript
 autocmd! BufNewFile,BufRead Makefile set noet
 let @a='yyp:s/./=/g, '
 
-" Remove trailing whitespace
-function! RemoveTrailingWS()
-    let l:winview = winsaveview()
-    silent! %s/\s\+$//e
-    call winrestview(l:winview)
-endfunction
-
-au BufWritePre <buffer> call RemoveTrailingWS()
+fun! StripTrailingWhitespace()
+ " Only strip if the b:noStripeWhitespace variable isn't set
+  if exists('b:noStripWhitespace')
+    return
+  endif
+  %s/\s\+$//e
+endfun
+autocmd BufWritePre * call StripTrailingWhitespace()
+autocmd FileType diff let b:noStripWhitespace=1
 
 " Color column 80
 hi ColorColumn ctermbg=52 guibg=darkred
 set cc=80
-
-" Instructions for noweb
-au BufRead,BufNewFile *.nw set textwidth=78
-au BufRead,BufNewFile *.nw set filetype=noweb
-let noweb_backend = "tex"
-let noweb_language = "python"
-let noweb_fold_code = 1
 
 " Miscellaneous
 set hlsearch
@@ -171,72 +165,14 @@ au WinEnter * set cursorline
 set cursorline
 nnoremap <Leader>c :set cursorcolumn!<CR>
 
-" Masochistic learning
-"nnoremap <up> <nop>
-"nnoremap <down> <nop>
-"nnoremap <left> <nop>
-"nnoremap <right> <nop>
-"inoremap <up> <nop>
-"inoremap <down> <nop>
-"inoremap <left> <nop>
-"inoremap <right> <nop>
+" Easy windows navigation
 nnoremap j gj
 nnoremap k gk
 inoremap jj <ESC>
-"inoremap kk <ESC>
-" Easy windows navigation
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
-
-" Settings for ScreenShell
-let g:ScreenImpl = 'Tmux'
-
-map ,t :w<CR>:Require<CR>:Eval (run-all-tests)<CR>
-
-" Settings for VimClojure
-let vimfiles=$HOME . "/.vim"
-let sep=":"
-let classpath = join(
-    \[".",
-   \ "src", "src/main/clojure", "src/main/resources",
-   \ "test", "src/test/clojure", "src/test/resources",
-   \ "classes", "target/classes",
-   \ "lib/*", "lib/dev/*",
-   \ "bin",
-   \ vimfiles."/bundle/clojure/devel/lib/*"
-   \],
-   \ sep)
-let vimclojureRoot = vimfiles."/bundle/clojure"
-let vimclojure#HighlightBuiltins=1
-let vimclojure#HighlightContrib=1
-let vimclojure#DynamicHighlighting=1
-let vimclojure#ParenRainbow=1
-let vimclojure#WantNailgun = 1
-let vimclojure#NailgunClient = vimclojureRoot."/bin/ng"
-let vimclojure#SplitPos = "bottom"
-let vimclojure#SplitSize = 6
-let vimclojure#FuzzyIndent = 1
-
-"nmap <silent> <Leader>sc :execute "ScreenShell lein nailgun<CR>"
-" Start a generic Clojure repl (uses screen.vim)
-"nmap <silent> <Leader>sC :execute "ScreenShell java -cp \"" . classpath . "\" clojure.main" <cr>
-
-" YankRing
-let g:yankring_history_file = '.yankring_history'
-nnoremap <silent> <F11> :YRShow<CR>
-nmap <silent> <Leader>p gp:YRPop<CR>
-
-" Tabular
-if exists(":Tabularize")
-    nmap <Leader>a= :Tabularize /=<CR>
-    vmap <Leader>a= :Tabularize /=<CR>
-    nmap <Leader>a: :Tabularize /:\zs<CR>
-    vmap <Leader>a: :Tabularize /:\zs<CR>
-    nmap <Leader>a<space> :Tabularize / \zs<CR>
-    vmap <Leader>a<space> :Tabularize / \zs<CR>
-endif
 
 set formatoptions-=t
 
@@ -253,9 +189,6 @@ vmap <C-j> ]egv
 nmap <Leader>l :tabnext<CR>
 nmap <Leader>h :tabprev<CR>
 
-" If running in GUI mode
-"set go=m
-
 " Diff current file with last saved version
 command! DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
  \ | wincmd p | diffthis
@@ -268,4 +201,83 @@ au BufRead * call matchadd('ErrorMsg', ' ')
 " Configure SuperTab for nice autocomplete
 
 let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
-"let g:SuperTabClosePreviewOnPopupClose = 1
+
+let g:clojure_maxlines = 10000
+autocmd FileType clojure setlocal lispwords+=match
+autocmd FileType clojure setlocal lispwords+=mdo
+autocmd FileType clojure setlocal lispwords+=form-to
+autocmd FileType clojure setlocal lispwords+=try
+
+"Navigate to token
+augroup clojure
+    autocmd! clojure
+    autocmd FileType clojure nmap <buffer> <silent> t [<C-D>
+augroup end
+nmap T <C-W><C-D>
+nmap cpo :Eval<CR>
+nmap crr :Require<CR>
+nmap cr! :Require!<CR>
+nmap ç ya)%a<CR><ESC>pc!!
+nmap à ya)%a<CR><ESC>O<ESC>i)<ESC>PI(macroexpand '<ESC>c!!
+nnoremap <Leader>sh :Slamhound<CR>
+nmap <leader>t :w<CR>:Require<CR>:Eval (run-all-tests)<CR>
+
+"markdown
+autocmd BufNewFile,BufReadPost *.md set filetype=markdown
+let g:markdown_fenced_languages = ['html', 'python', 'bash=sh', 'clojure', 'haskell']
+
+" disable paredit-like sexp behaviour
+let g:sexp_enable_insert_mode_mappings = 0
+
+" build.boot is a clojure file
+autocmd BufNewFile,BufRead build.boot set filetype=clojure
+autocmd BufNewFile,BufRead *.edn set filetype=clojure
+" detect boot scripts based on filetype
+fun! s:DetectNode()
+    if getline(1) == '#!/usr/bin/env boot'
+        set ft=clojure
+    endif
+endfun
+
+autocmd BufNewFile,BufRead * call s:DetectNode()
+
+" ruby indents 2 spaces
+autocmd FileType ruby setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType sh setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType zsh setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType css setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType javascript setlocal expandtab shiftwidth=2 tabstop=2
+let g:terraform_fmt_on_save = 1
+
+" NERDTree toggle
+map <Leader>n :NERDTreeToggle<CR>
+
+" Haskell
+let g:hdevtools_stack = 1
+"let g:LanguageClient_serverCommands = {
+"  \ 'haskell': ['hie-wrapper', '--lsp', '-l', '/Users/gary/.vim/log/hie.log']
+"  \ }
+let g:LanguageClient_rootMarkers = ['*.cabal', 'stack.yaml']
+augroup haskell
+    autocmd! haskell
+    au FileType haskell setlocal expandtab shiftwidth=2 tabstop=2
+    au Filetype haskell hi link ALEError Error
+    au Filetype haskell hi Warning term=underline cterm=underline ctermfg=Yellow gui=undercurl guisp=Gold
+    au Filetype haskell hi link ALEWarning Warning
+    au Filetype haskell hi link ALEInfo SpellCap
+    "au FileType haskell inoremap <tab> :call LanguageClient_contextMenu()<CR>
+    au FileType haskell noremap K :call LanguageClient#textDocument_hover()<CR>
+    au FileType haskell nmap t :call LanguageClient#textDocument_definition()<CR>
+    au FileType haskell noremap <Leader>r :call LanguageClient#textDocument_rename()<CR>
+    au FileType haskell noremap <Leader>R :call LanguageClient#textDocument_references()<CR>
+    "au FileType haskell map <Leader>lf :call LanguageClient#textDocument_formatting()<CR>
+    "au FileType haskell map <Leader>la :call LanguageClient#textDocument_codeAction()<CR>
+    "au FileType haskell map <Leader>ls :call LanguageClient#textDocument_documentSymbol()<CR>
+augroup end
+
+" utilsnip
+
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsEditSplit="horizontal"
