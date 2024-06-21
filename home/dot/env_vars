@@ -1,80 +1,31 @@
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
+#!/usr/bin/env bash
 
-export CLICOLOR=true
-export EDITOR=vim
-export NNTPSERVER='news.eternal-september.org'
-export TEXINPUTS=.:~/lib/latex:/opt/local/share/texmf//::
-export SCALA_HOME=/usr/share/scala
-export OCTAVE_INCLUDE=/opt/local/include/octave-3.2.4/
-export GNUTERM=x11
-export MACPORTS_INCLUDE=/opt/local/include
-export GDFONTPATH="/Library/Fonts"
-export GNUPLOT_DEFAULT_GDFONT="Arial.ttf"
-export RACKET_DIR=/Applications/racket
+echo "export LANG=en_US.UTF-8"
+echo "export LC_ALL=en_US.UTF-8"
+echo "export CLICOLOR=true"
+echo "export EDITOR=vim"
+echo "export REPORTTIME=10"
 
-export REPORTTIME=10
+add_to_path_if_exists() {
+  path=$1
+  if [ -d "$path" ]; then
+    export PATH="$path:$PATH"
+  fi
+}
 
-export CLOJURE_HOME=/opt/local/share/java/clojure/lib/
-export CLASSPATH=$CLASSPATH:$CLOJURE_HOME
-# Setting the PATH variable
+add_to_manpath_if_exists() {
+  path=$1
+  if [ -d "$path" ]; then
+    export MANPATH="$path:$MANPATH"
+  fi
+}
 
-# Mac OS X uses path_helper to preload PATH, clear it out first
-if [ -x /usr/libexec/path_helper ]; then
-    PATH=''
-    eval `/usr/libexec/path_helper -s`
-fi
+add_to_path_if_exists "/opt/homebrew/bin"
+add_to_path_if_exists "$(brew --prefix)/opt/coreutils/libexec/gnubin"
+add_to_manpath_if_exists "$(brew --prefix)/opt/coreutils/libexec/gnuman"
 
-if [ -d /usr/local/bin ]; then
-	export PATH=$PATH:/usr/local/bin
-fi
-if [ -d /opt/local/libexec/gnubin ]; then
-    export PATH=/opt/local/libexec/gnubin:$PATH
-fi
-if [ -d /opt/local ]; then
-	export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-fi
-if [ -d ~/bin ] ; then
-	export PATH=~/bin:$PATH
-fi
-if [ -d /usr/share/scala/bin ]; then
-	export PATH=$PATH:/usr/share/scala/bin
-fi
-if [ -d $RACKET_DIR ]; then
-	export PATH=$PATH:$RACKET_DIR/bin
-	export MANPATH=$MANPATH:$RACKET_DIR/man
-fi
-if [ -d /opt/local/man ]; then
-	export MANPATH=/opt/local/man:$MANPATH
-fi
-if [ -d /usr/local/man ]; then
-	export MANPATH=/usr/local/man:$MANPATH
-fi
-if [ -d /usr/texbin ]; then
-    export PATH=$PATH:/usr/texbin
-fi
-if [ -d ~/.cabal/bin ]; then
-    export PATH=$PATH:~/.cabal/bin
-fi
-if [ -d ~/.cabal/share/man ]; then
-    export MANPATH=$MANPATH:~/.cabal/share/man
-fi
+add_to_path_if_exists "$HOME/bin"
+add_to_path_if_exists "$HOME/.local/bin"
 
-if [ -d /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin ]; then
-    export PATH=/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH
-fi
-
-if [ -d ~/.rbenv/bin ]; then
-    export PATH=~/.rbenv/bin:$PATH
-fi
-
-# if rbenv is present, configure it for use
-if which rbenv &> /dev/null; then
-    # enable shims and auto-completion
-    eval "$(rbenv init -)"
-fi
-
-PATH="/usr/local/heroku/bin:$PATH"
-
-export M2_HOME=~/.mvn
-export M2=$M2_HOME/bin
+echo "export PATH=$PATH"
+echo "export MANPATH=$MANPATH"
