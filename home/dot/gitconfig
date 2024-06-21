@@ -14,6 +14,7 @@
     conflictstyle = diff3
     summary = true
 [alias]
+    hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
     ca = commit --amend --reset-author --no-edit
     pf = push --force-with-lease
 [push]
