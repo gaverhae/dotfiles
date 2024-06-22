@@ -24,6 +24,23 @@ _sync() (
     rm -f $file_in_repo
     ln $file_in_home $file_in_repo
   done
+  cd ..
+  # Vim plugins
+  dir_in_home=$HOME/.vim/bundle
+  dir_in_repo=vim_plugins
+  rm -rf $dir_in_repo
+  mkdir -p $dir_in_repo
+  for plugin in $(ls $dir_in_home); do
+    origin=$(git -C $dir_in_home/$plugin remote get-url origin)
+    commit_date=$(git -C $dir_in_home/$plugin show -q --format=%cd --date=format:%Y%m%d)
+    commit_count=$(git -C $dir_in_home/$plugin rev-list --count HEAD)
+    commit_sha=$(git -C $dir_in_home/$plugin show -q --format=%h --abbrev=8)
+    jq -n \
+       --arg version $commit_date.$commit_count.$commit_sha \
+       --arg origin $origin \
+       '{$origin,$version}' \
+     > $dir_in_repo/$plugin
+  done
 )
 
 _main() (
