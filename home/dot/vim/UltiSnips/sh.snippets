@@ -1,0 +1,14 @@
+snippet #! "basic Bash layout" b
+#!/usr/bin/env bash
+
+set -euo pipefail
+DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
+cd "$DIR"
+endsnippet
+
+snippet log "hide logs" b
+log=$(mktemp)
+trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
+
+trap - EXIT
+endsnippet
