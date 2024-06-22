@@ -11,24 +11,8 @@ Usage: $(basename ${0}) cmd
 where cmd is one of:
 
 help     Displays this help text.
-diff     Lists each managed file that differs.
 sync     Replaces files in this repos with links to \$HOME.
 EOF
-)
-
-_diff() (
-  for file in $(cd dot; find . -type f); do
-    h=$HOME/.${file:2}
-    if [ -f "$h" ]; then
-      if diff -q dot/${file:2} $h >/dev/null; then
-        echo ". .${file:2}"
-      else
-        echo "c .${file:2}"
-      fi
-    else
-      echo "m .${file:2}"
-    fi
-  done
 )
 
 _sync() (
@@ -42,7 +26,7 @@ _sync() (
 
 _main() (
   case "${1:-}" in
-    help|diff|sync|install)
+    help|sync)
       _$1
       ;;
     *)
