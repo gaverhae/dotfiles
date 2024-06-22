@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
-cd "$DIR/../home"
+DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/.." &> /dev/null && pwd)"
+cd "$DIR"
 
 _help() (
   cat <<EOF
@@ -32,11 +32,13 @@ _diff() (
 )
 
 _sync() (
-  for f in $(cd dot; find . -type f); do
-    h=$HOME/.${f:2}
-    touch $h
-    rm dot/${f:2}
-    ln $h dot/${f:2}
+  cd home
+  for file_in_repo in $(find . -type f); do
+    file_in_home=$HOME/${file_in_repo/"/dot/"/}
+    mkdir -p $(dirname $file_in_home)
+    touch $file_in_home
+    rm -f $file_in_repo
+    ln $file_in_home $file_in_repo
   done
 )
 
