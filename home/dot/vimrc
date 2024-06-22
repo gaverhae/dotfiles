@@ -139,7 +139,7 @@ autocmd! BufNewFile,BufRead Makefile set noet
 let @a='yyp:s/./=/g, '
 
 fun! StripTrailingWhitespace()
- " Only strip if the b:noStripeWhitespace variable isn't set
+  " Only strip if the b:noStripeWhitespace variable isn't set
   if exists('b:noStripWhitespace')
     return
   endif

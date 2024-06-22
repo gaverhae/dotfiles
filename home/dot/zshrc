@@ -63,7 +63,6 @@ $ '
 eval "$($HOME/.env_vars)"
 alias ls="ls --color=auto"
 alias grep="grep --color=auto"
-eval "$(direnv hook zsh)"
 
 # ensure compatibility tmux <-> direnv
 if [ -n "$TMUX" ] && [ -n "$DIRENV_DIR" ]; then
@@ -116,3 +115,4 @@ _gc() {
 compdef _gc gc
 
 if [ -e /Users/gary/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/gary/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+if [ -e /home/gary/.nix-profile/etc/profile.d/nix.sh ]; then . /home/gary/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
