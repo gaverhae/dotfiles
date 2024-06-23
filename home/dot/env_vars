@@ -21,11 +21,12 @@ add_to_manpath_if_exists() {
 }
 
 add_to_path_if_exists "/opt/homebrew/bin"
+add_to_path_if_exists "/home/linuxbrew/.linuxbrew/bin"
 add_to_path_if_exists "$(brew --prefix)/opt/coreutils/libexec/gnubin"
 add_to_manpath_if_exists "$(brew --prefix)/opt/coreutils/libexec/gnuman"
 
 add_to_path_if_exists "$HOME/bin"
 add_to_path_if_exists "$HOME/.local/bin"
 
-echo "export PATH=$PATH"
-echo "export MANPATH=$MANPATH"
+echo "export PATH=\"$PATH\""
+echo "export MANPATH=\"$MANPATH\""
