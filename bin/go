@@ -21,7 +21,7 @@ _sync() (
   for file_in_repo in $(find . -type f); do
     file_in_home=$HOME/${file_in_repo/"/dot/"/}
     mkdir -p $(dirname $file_in_home)
-    touch $file_in_home
+    [ -f $file_in_home ] || touch $file_in_home
     rm -f $file_in_repo
     ln $file_in_home $file_in_repo
   done
