@@ -19,11 +19,12 @@ ifchmod() (
   fi
 )
 
-echo "Removing Nix"
+echo "Removing Nix configuration"
 for f in $HOME/{.nix-channels,.nix-defexpr,.nix-profile,.config/nixpkgs,.cache/nix,.local/state/nix}; do
   ifrm $f
 done
 
+echo "Removing Nix store"
 ifchmod /nix/store
 ifrm /nix/store
 ifrm /nix/var
@@ -32,9 +33,9 @@ echo "Installing fresh Nix"
 (
   set -euo pipefail
   cd $(mktemp -d)
-  curl https://releases.nixos.org/nix/nix-2.10.3/nix-2.10.3-x86_64-darwin.tar.xz > tarball
+  curl https://releases.nixos.org/nix/nix-2.10.3/nix-2.10.3-aarch64-darwin.tar.xz > tarball
   tar xzf tarball
-  cd nix-2.10.3-x86_64-darwin
+  cd nix-2.10.3-aarch64-darwin
   printf '64d\nw\n' | ed -s install
   ./install --no-daemon
 )

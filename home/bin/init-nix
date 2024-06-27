@@ -3,16 +3,16 @@
 set -euo pipefail
 
 if [ -e .envrc ] || [ -e .envrc.private ] || [ -e nix ] || [ -e shell.nix ] || [ -e bin/update-nixpkgs ]; then
-    echo "Conflict. Aborting."
-    exit 1
+  echo "Conflict. Aborting."
+  exit 1
 fi
 
-cat <<EOF > shell.nix
+cat <<'EOF' > shell.nix
 let
   pkgs = import ./nix/nixpkgs.nix;
 in
 pkgs.mkShell {
-  LOCALE_ARCHIVE = if pkgs.stdenv.isLinux then "\${pkgs.glibcLocales}/lib/locale/locale-archive" else "";
+  LOCALE_ARCHIVE = if pkgs.stdenv.isLinux then "${pkgs.glibcLocales}/lib/locale/locale-archive" else "";
   buildInputs = with pkgs; [
     bash
     curl
@@ -21,7 +21,7 @@ pkgs.mkShell {
 }
 EOF
 
-cat <<EOF > .envrc
+cat <<'EOF' > .envrc
 use nix
 
 PATH_add bin
@@ -67,6 +67,7 @@ jq -n \
    '{$branch, $repo, $owner, $commit, $sha}' \
    > $DIR/../nix/src.json
 EOF
+
 chmod +x bin/update-nixpkgs
 
 mkdir nix
