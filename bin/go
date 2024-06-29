@@ -16,7 +16,25 @@ sync     Replaces files in this repos with links to \$HOME.
 EOF
 )
 
+_check_binary() (
+  trap "echo Missing binary: $1" EXIT
+  command -v $1 >/dev/null
+  trap - EXIT
+)
+
 _sync() (
+  # Required tools
+  _check_binary nix
+  _check_binary direnv
+  _check_binary brew
+  nix --version > tool_versions
+  direnv --version >> tool_versions
+  brew --version >> tool_versions
+
+  # brew packages
+  brew list --versions > brew_versions
+
+  # Configuration files
   cd home
   for file_in_repo in $(find . -type f); do
     file_in_home=$HOME/${file_in_repo/"/dot/"/}
@@ -26,6 +44,7 @@ _sync() (
     ln $file_in_home $file_in_repo
   done
   cd ..
+
   # Vim plugins
   dir_in_home=$HOME/.vim/bundle
   dir_in_repo=vim_plugins
