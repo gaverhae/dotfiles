@@ -145,12 +145,15 @@ let @a='yyp:s/./=/g, '
 
 " Remove trailing whitespace
 function! RemoveTrailingWS()
-    let l:winview = winsaveview()
-    silent! %s/\s\+$//e
-    call winrestview(l:winview)
+  if exists('b:noStripWhitespace')
+    return
+  endif
+  let l:winview = winsaveview()
+  silent! %s/\s\+$//e
+  call winrestview(l:winview)
 endfunction
-
-"au BufWritePre <buffer> call RemoveTrailingWS()
+autocmd BufWritePre * call RemoveTrailingWS()
+autocmd FileType diff let b:noStripWhitespace=1
 
 " Color column 80
 hi ColorColumn ctermbg=52 guibg=darkred
@@ -247,14 +250,8 @@ endfun
 
 autocmd BufNewFile,BufRead * call s:DetectNode()
 
-" ruby indents 2 spaces
-autocmd FileType css setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType html setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType javascript setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType json setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType ruby setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType sh setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType zsh setlocal expandtab shiftwidth=2 tabstop=2
+" indent 2 spaces
+autocmd FileType css,html,javascript,json,ruby,sh,zsh setlocal expandtab shiftwidth=2 tabstop=2
 let g:terraform_fmt_on_save = 1
 
 " NERDTree toggle
