@@ -32,7 +32,8 @@ _sync() (
   brew --version >> tool_versions
 
   # brew packages
-  brew list --versions > brew_versions
+  for leaf in $(brew leaves); do brew list $leaf --version; done > brew_versions
+  brew list --version --cask >> brew_versions
 
   # Configuration files
   cd home
