@@ -63,9 +63,13 @@ _sync() (
   done
 )
 
+_show() (
+  while true; do go sync; sleep 3; git --no-pager diff; done
+)
+
 _main() (
   case "${1:-}" in
-    help|sync)
+    help|sync|show)
       _$1
       ;;
     *)

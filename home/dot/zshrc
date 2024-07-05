@@ -115,53 +115,7 @@ _gc() {
 }
 compdef _gc gc
 
-tail-gcp-instance() {
-  case $1 in
-    daml)
-      local project=da-dev-gcp-daml-language
-      ;;
-    davl)
-      local project=da-dev-pinacolada
-      ;;
-    *)
-  esac
-  local CURRENT_DATE_UTC=`date --utc -Iseconds`
-  local FILE=$(mktemp)
-  while true; do
-    sleep 1
-    gcloud logging read --project=$project "resource.type=gce_instance AND resource.labels.instance_id=$2 AND timestamp>=\"${CURRENT_DATE_UTC}\"" --format json | jq -r '.[] | .textPayload' > $FILE
-    cat $FILE | sed '/^$/d'
-    if [[ $(cat $FILE | head -n 5 | wc -l) -ne 0 ]]; then
-      CURRENT_DATE_UTC=`date --utc -Iseconds`;
-    fi
-  done
-}
-
-refresh_machines() {
-    machines=$(gcloud compute instances list --format=json --project=da-dev-gcp-daml-language | jq -c '[.[] | select (.name | startswith("ci-")) | {key: .name, value: .zone | sub (".*/"; "")}] | from_entries')
-}
-
-kill_machine() {
-    if [ -z "$machines" ]; then
-        refresh_machines
-    fi
-    for machine in $@; do
-        gcloud -q compute instances --project=da-dev-gcp-daml-language delete --zone=$(echo $machines | jq -r ".[\"$machine\"]") $machine
-    done
-}
-_kill_machine() {
-    local machine_names
-    if [ -z "$machines" ]; then
-        refresh_machines
-    fi
-    machine_names=$(echo $machines | jq -r "keys - $(echo -n $words | jq -sRc 'split(" ")') | .[]")
-    _arguments "*: :($machine_names)"
-}
-compdef _kill_machine kill_machine
-
-if [ -e /Users/garyverhaegen/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/garyverhaegen/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-
-git_large() (
+git-large() (
     git rev-list --objects --all |
     git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' |
     sed -n 's/^blob //p' |
@@ -170,7 +124,4 @@ git_large() (
     $(command -v gnumfmt || echo numfmt) --field=2 --to=iec-i --suffix=B --padding=7 --round=nearest
 )
 
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-
-if [ -e /Users/gary/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/gary/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-if [ -e /home/gary/.nix-profile/etc/profile.d/nix.sh ]; then . /home/gary/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+f=$HOME/.nix-profile/etc/profile.d/nix.sh; if [ -f $f ]; then . $f; fi
