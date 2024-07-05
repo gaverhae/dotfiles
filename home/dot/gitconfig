@@ -34,5 +34,9 @@
 [diff]
     colorMoved = zebra
     colorMovedWS = allow-indentation-change
+[advice]
+    skippedCherryPicks = false
+[credential]
+    helper =
 [log]
     date = iso

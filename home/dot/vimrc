@@ -16,6 +16,11 @@ set shortmess=atI
 " Correct shell
 set shell=bash\ -l
 
+" highlight trailing spaces
+highlight ExtraWhitespace ctermbg=red guibg=red
+autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+\%#\@<!$/
+autocmd InsertLeave * redraw!
 " Colorscheme
 set t_Co=256
 set background=dark
@@ -138,15 +143,14 @@ autocmd! BufNewFile,BufRead *.json set ft=javascript
 autocmd! BufNewFile,BufRead Makefile set noet
 let @a='yyp:s/./=/g, '
 
-fun! StripTrailingWhitespace()
-  " Only strip if the b:noStripeWhitespace variable isn't set
-  if exists('b:noStripWhitespace')
-    return
-  endif
-  %s/\s\+$//e
-endfun
-autocmd BufWritePre * call StripTrailingWhitespace()
-autocmd FileType diff let b:noStripWhitespace=1
+" Remove trailing whitespace
+function! RemoveTrailingWS()
+    let l:winview = winsaveview()
+    silent! %s/\s\+$//e
+    call winrestview(l:winview)
+endfunction
+
+"au BufWritePre <buffer> call RemoveTrailingWS()
 
 " Color column 80
 hi ColorColumn ctermbg=52 guibg=darkred
@@ -207,12 +211,14 @@ autocmd FileType clojure setlocal lispwords+=match
 autocmd FileType clojure setlocal lispwords+=mdo
 autocmd FileType clojure setlocal lispwords+=form-to
 autocmd FileType clojure setlocal lispwords+=try
+let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let', '^match$']
 
 "Navigate to token
 augroup clojure
     autocmd! clojure
     autocmd FileType clojure nmap <buffer> <silent> t [<C-D>
 augroup end
+nmap t [<C-D>
 nmap T <C-W><C-D>
 nmap cpo :Eval<CR>
 nmap crr :Require<CR>
@@ -242,11 +248,13 @@ endfun
 autocmd BufNewFile,BufRead * call s:DetectNode()
 
 " ruby indents 2 spaces
+autocmd FileType css setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType html setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType javascript setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType json setlocal expandtab shiftwidth=2 tabstop=2
 autocmd FileType ruby setlocal expandtab shiftwidth=2 tabstop=2
 autocmd FileType sh setlocal expandtab shiftwidth=2 tabstop=2
 autocmd FileType zsh setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType css setlocal expandtab shiftwidth=2 tabstop=2
-autocmd FileType javascript setlocal expandtab shiftwidth=2 tabstop=2
 let g:terraform_fmt_on_save = 1
 
 " NERDTree toggle
@@ -281,3 +289,5 @@ let g:UltiSnipsExpandTrigger="<tab>"
 let g:UltiSnipsJumpForwardTrigger="<c-b>"
 let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 let g:UltiSnipsEditSplit="horizontal"
+
+autocmd FileType yaml set indentexpr=off | set autoindent
