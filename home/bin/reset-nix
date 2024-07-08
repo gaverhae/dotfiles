@@ -32,6 +32,8 @@ case $(uname -sm) in
   "Darwin arm64")
     platform=aarch64-darwin
     ;;
+  "Linux x86_64")
+    platform=x86_64-linux
 esac
 
 echo "Installing fresh Nix"
@@ -39,7 +41,7 @@ echo "Installing fresh Nix"
   set -euo pipefail
   cd $(mktemp -d)
   curl https://releases.nixos.org/nix/nix-2.10.3/nix-2.10.3-${platform}.tar.xz > tarball
-  tar xzf tarball
+  tar xf tarball
   cd nix-2.10.3-${platform}
   printf '64d\n230d\nw\n' | ed -s install
   ./install --no-daemon

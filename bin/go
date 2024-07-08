@@ -13,6 +13,8 @@ where cmd is one of:
 help     Displays this help text.
 sync     Replaces files in this repos with links to \$HOME.
          This will create empty files in \$HOME if no corresponding file exists.
+show     Start a loop that shows the diffs between current machine state and
+         dotfiles target state.
 EOF
 )
 
@@ -32,8 +34,10 @@ _sync() (
   brew --version >> tool_versions
 
   # brew packages
-  for leaf in $(brew leaves); do brew list $leaf --version; done > brew_versions
-  brew list --version --cask >> brew_versions
+  for leaf in $(brew leaves); do brew list $leaf --version; done > brew_leaves
+  if [ $(uname) = Darwin ]; then
+    brew list --version --cask > brew_casks
+  fi
 
   # Configuration files
   cd home
