@@ -15,6 +15,7 @@ sync     Replaces files in this repos with links to \$HOME.
          This will create empty files in \$HOME if no corresponding file exists.
 show     Start a loop that shows the diffs between current machine state and
          dotfiles target state.
+update   Updates everything, or at least tries to.
 EOF
 )
 
@@ -27,10 +28,8 @@ _check_binary() (
 _sync() (
   # Required tools
   _check_binary nix
-  _check_binary direnv
   _check_binary brew
   nix --version > tool_versions
-  direnv --version >> tool_versions
   brew --version >> tool_versions
 
   # brew packages
@@ -68,13 +67,39 @@ _sync() (
   done
 )
 
+_update() (
+  go sync
+  git update-index --refresh
+  if ! git diff-index --quiet HEAD; then
+    echo "update should only be called on a machine that is up-to-date."
+    exit 1
+  fi
+  # Vim plugins
+  cd $DIR
+  for vp in $(cd vim_plugins; ls); do (
+    cd $HOME/.vim/bundle/$vp
+    git pull
+  ) done
+  # brew recipes
+  brew update && brew upgrade
+  # brew casks
+  if [ $(uname) = Darwin ]; then
+    for cask in $(cat brew_casks | cut -f1 -d' '); do
+      brew reinstall --cask $cask
+    done
+  fi
+  # tools
+  nix upgrade-nix
+  go sync
+)
+
 _show() (
   while true; do go sync; sleep 3; git --no-pager diff; done
 )
 
 _main() (
   case "${1:-}" in
-    help|sync|show)
+    help|sync|show|update)
       _$1
       ;;
     *)
