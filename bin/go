@@ -51,6 +51,7 @@ _sync() (
 
   # Vim plugins
   dir_in_home=$HOME/.vim/bundle
+  mkdir -p $dir_in_home
   dir_in_repo=vim_plugins
   rm -rf $dir_in_repo
   mkdir -p $dir_in_repo
