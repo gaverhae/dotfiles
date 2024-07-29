@@ -91,6 +91,7 @@ _update() (
   fi
   # tools
   nix upgrade-nix
+  update-nixpkgs
   go sync
 )
 
