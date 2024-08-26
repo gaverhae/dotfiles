@@ -86,9 +86,11 @@ _update() (
   # brew casks
   if [ $(uname) = Darwin ]; then
     for cask in $(cat brew_casks | cut -f1 -d' '); do
-      brew reinstall --cask $cask
+      brew reinstall --cask $cask --no-binaries
     done
   fi
+  # conflict between macvim and vim
+  brew reinstall vim
   # tools
   nix upgrade-nix
   update-nixpkgs
