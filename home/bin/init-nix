@@ -10,6 +10,7 @@ fi
 cat <<'EOF' > shell.nix
 let
   pkgs = import ./nix/nixpkgs.nix;
+  getFlake = url: (builtins.getFlake url).packages.${pkgs.system}.default;
 in
 pkgs.mkShell {
   LOCALE_ARCHIVE = if pkgs.stdenv.isLinux then "${pkgs.glibcLocales}/lib/locale/locale-archive" else "";
@@ -22,6 +23,7 @@ pkgs.mkShell {
 EOF
 
 cat <<'EOF' > .envrc
+export NIX_CONFIG="experimental-features = nix-command flakes"
 use nix
 
 PATH_add bin
