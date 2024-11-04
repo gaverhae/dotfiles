@@ -124,4 +124,16 @@ git-large() (
     $(command -v gnumfmt || echo numfmt) --field=2 --to=iec-i --suffix=B --padding=7 --round=nearest
 )
 
+rr() {
+  git fetch
+  git checkout origin/$1
+  git rebase origin/main
+  git push -f origin HEAD:$1
+}
+
+_rr() {
+  _arguments "1: :($(git branch -r | grep -v 'HEAD\|main' | sed 's:  origin/::'))"
+}
+compdef _rr rr
+
 f=$HOME/.nix-profile/etc/profile.d/nix.sh; if [ -f $f ]; then . $f; fi
