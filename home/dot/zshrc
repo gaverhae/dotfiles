@@ -128,8 +128,13 @@ rr() (
   set -euo pipefail
   git fetch
   git checkout origin/$1
-  git rebase origin/main
-  git push -f origin HEAD:$1
+  if git rebase origin/main; then
+    git push -f origin/$1
+  else
+    git rebase --abort
+  fi
+  git checkout main
+  git pull
 )
 
 _rr() {
