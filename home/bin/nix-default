@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DEFAUT_SRC="$HOME/.default/nixpkgs.json"
+
+if [ -f "$DEFAULT_SRC" ] && [ -d nix ]; then
+  rm -f nix/src.json
+  ln "$DEFAULT_SRC" nix/src.json
+fi

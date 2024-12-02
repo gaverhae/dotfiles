@@ -26,3 +26,5 @@ jq -n \
    --arg sha $archive_sha \
    '{$branch, $repo, $owner, $commit, $sha}' \
    > $DIR/../nix/src.json
+
+cat $DIR/../nix/src.json > $DIR/../home/dot/default/src.json
