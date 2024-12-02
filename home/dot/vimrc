@@ -85,6 +85,7 @@ else
   set autoindent
 endif
 set backup
+set backupcopy=yes
 function! InitBackupDir()
     let separator = "."
     let parent = $HOME .'/' . separator . 'vim/'
