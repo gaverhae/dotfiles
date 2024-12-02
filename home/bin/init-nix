@@ -3,7 +3,7 @@
 set -euo pipefail
 
 LINK_DEFAULT=no
-DEFAUT_SRC="$HOME/.default/nixpkgs.json"
+DEFAULT_SRC="$HOME/.default/nixpkgs.json"
 if [ "${1:-}" = "--default"] && [ -f "$DEFAULT_SRC" ]; then
   LINK_DEFAULT=yes
 fi
