@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+LINK_DEFAULT=no
+DEFAUT_SRC="$HOME/.default/nixpkgs.json"
+if [ "${1:-}" = "--default"] && [ -f "$DEFAULT_SRC" ]; then
+  LINK_DEFAULT=yes
+fi
+
 if [ -e .envrc ] || [ -e .envrc.private ] || [ -e nix ] || [ -e shell.nix ] || [ -e bin/update-nixpkgs ]; then
   echo "Conflict. Aborting."
   exit 1
@@ -96,5 +102,9 @@ in
   }) {}
 EOF
 
-echo '{"branch":"nixpkgs-unstable","repo":"nixpkgs","owner":"NixOS"}' > nix/src.json
-nix-shell -p jq -p curl --run bin/update-nixpkgs
+if [ "yes" = "$LINK_DEFAULT" ]; then
+  ln "$DEFAULT_SRC" nix/src.json
+else
+  echo '{"branch":"nixpkgs-unstable","repo":"nixpkgs","owner":"NixOS"}' > nix/src.json
+  nix-shell -p jq -p curl --run bin/update-nixpkgs
+fi
