@@ -142,4 +142,15 @@ _rr() {
 }
 compdef _rr rr
 
+pick() (
+  set -euo pipefail
+  ret=$(git rev-parse --abbrev-ref HEAD)
+  sha=$1
+  remote_branch=$2
+  git checkout origin/main
+  git cherry-pick $sha
+  git push origin HEAD:refs/heads/$remote_branch
+  git checkout $ret
+)
+
 f=$HOME/.nix-profile/etc/profile.d/nix.sh; if [ -f $f ]; then . $f; fi
