@@ -26,6 +26,7 @@ EOF
 cat <<'EOF' > .envrc
 export NIX_CONFIG="experimental-features = nix-command flakes"
 use nix
+watch_file nix/src.json
 
 PATH_add bin
 
