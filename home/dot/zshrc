@@ -153,4 +153,10 @@ pick() (
   git checkout $ret
 )
 
+fr() (
+  set -euo pipefail
+  git fetch
+  git rebase origin/main
+)
+
 f=$HOME/.nix-profile/etc/profile.d/nix.sh; if [ -f $f ]; then . $f; fi
