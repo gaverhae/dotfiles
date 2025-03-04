@@ -148,8 +148,11 @@ pick() (
   sha=$1
   remote_branch=$2
   git checkout origin/main
-  git cherry-pick $sha
-  git push origin HEAD:refs/heads/$remote_branch
+  if git cherry-pick $sha; then
+    git push origin HEAD:refs/heads/$remote_branch
+  else
+    git cherry-pick --abort
+  fi
   git checkout $ret
 )
 
