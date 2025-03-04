@@ -129,11 +129,8 @@ rr() (
   branch=$(git rev-parse --abbrev-ref HEAD)
   git fetch
   git checkout origin/$1
-  if git rebase origin/main; then
-    git push -f origin/$1
-  else
-    git rebase --abort
-  fi
+  git rebase origin/${2:-main}
+  git push -f origin HEAD:$1
   if [ -n "$branch" ]; then
     git checkout $branch
   fi
