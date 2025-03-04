@@ -15,7 +15,7 @@ fi
 
 cat <<'EOF' > shell.nix
 let
-  pkgs = import ./nix/nixpkgs.nix;
+  pkgs = import ./nix/nixpkgs.nix {};
   getFlake = url: (builtins.getFlake url).packages.${pkgs.system}.default;
 in
 pkgs.mkShell {
@@ -100,7 +100,7 @@ in
   import (builtins.fetchTarball {
     url = "https://github.com/${spec.owner}/${spec.repo}/archive/${spec.commit}.tar.gz";
     sha256 = spec.sha;
-  }) {}
+  })
 EOF
 
 if [ "yes" = "$LINK_DEFAULT" ]; then
