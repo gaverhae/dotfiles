@@ -92,7 +92,7 @@ _update() (
   # conflict between macvim and vim
   brew reinstall vim
   # tools
-  nix upgrade-nix
+  #nix upgrade-nix
   update-nixpkgs
   go sync
 )
