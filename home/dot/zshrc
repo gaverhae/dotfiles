@@ -126,6 +126,7 @@ git-large() (
 
 rr() (
   set -euo pipefail
+  branch=$(git rev-parse --abbrev-ref HEAD)
   git fetch
   git checkout origin/$1
   if git rebase origin/main; then
@@ -133,8 +134,9 @@ rr() (
   else
     git rebase --abort
   fi
-  git checkout main
-  git pull
+  if [ -n "$branch" ]; then
+    git checkout $branch
+  fi
 )
 
 _rr() {
