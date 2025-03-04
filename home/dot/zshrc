@@ -159,4 +159,12 @@ fr() (
   git rebase origin/main
 )
 
+prs() (
+  n=0
+  for c in $(git log --format=%h HEAD...origin/main | tac); do
+    n=$(( n + 1 ))
+    git push origin ${c}:refs/heads/gary-$n
+  done
+)
+
 f=$HOME/.nix-profile/etc/profile.d/nix.sh; if [ -f $f ]; then . $f; fi
