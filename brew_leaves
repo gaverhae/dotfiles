@@ -2,6 +2,7 @@ age 1.2.1
 coreutils 9.7
 direnv 2.36.0
 fswatch 1.18.3
+gh 2.72.0
 git 2.49.0
 grep 3.12
 jq 1.7.1
