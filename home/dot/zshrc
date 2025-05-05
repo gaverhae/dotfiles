@@ -164,8 +164,19 @@ fr() (
 prs() (
   n=0
   for c in $(git log --format=%h HEAD...origin/main | tac); do
+    if [ "$n" = "0" ]; then
+      prev=main
+    else
+      prev=gary-$n
+    fi
     n=$(( n + 1 ))
-    git push origin ${c}:refs/heads/gary-$n
+    branch=gary-$n
+    git push origin ${c}:refs/heads/$branch
+    gh api -XPOST '/repos/{owner}/{repo}/pulls' \
+           -f head=$branch \
+           -f base=$prev \
+           -f title="$(git show origin/$branch -q --format=%s)" \
+           -f body="$(git show origin/$branch -q --format=%b)"
   done
 )
 
