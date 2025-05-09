@@ -145,12 +145,12 @@ open_pr() (
   set -euo pipefail
   head=$1
   base=${2:-main}
-  resp=$(gh api -XPOST '/repos/{owner}/{repo}/pulls' \
-                -f head=$head \
-                -f base=$base \
-                -f title="$(git show origin/$head -q --format=%s)" \
-                -f body="$(git show origin/$head -q --format=%b)")
-  echo "Opened: $(echo $resp | jq -r .url)"
+  gh api -XPOST '/repos/{owner}/{repo}/pulls' \
+         -f head=$head \
+         -f base=$base \
+         -f title="$(git show origin/$head -q --format=%s)" \
+         -f body="$(git show origin/$head -q --format=%b)" \
+         -q '.url'
 )
 
 pick() (
