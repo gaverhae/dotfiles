@@ -189,7 +189,9 @@ prs() (
     fi
     n=$(( n + 1 ))
     branch=gary-$n
-    git push origin ${c}:refs/heads/$branch >$log 2>&1
+    git checkout origin/$prev >$log 2>&1
+    git cherry-pick $c >$log 2>&1
+    git push origin HEAD:refs/heads/$branch >$log 2>&1
     open_pr $branch $prev
   done
   trap - EXIT
