@@ -141,6 +141,16 @@ _rr() {
 }
 compdef _rr rr
 
+open_pr() (
+  head=$1
+  base=${2:-main}
+  gh api -XPOST '/repos/{owner}/{repo}/pulls' \
+         -f head=$head \
+         -f base=$base \
+         -f title="$(git show origin/$head -q --format=%s)" \
+         -f body="$(git show origin/$head -q --format=%b)"
+)
+
 pick() (
   set -euo pipefail
   ret=$(git rev-parse --abbrev-ref HEAD)
@@ -172,11 +182,7 @@ prs() (
     n=$(( n + 1 ))
     branch=gary-$n
     git push origin ${c}:refs/heads/$branch
-    gh api -XPOST '/repos/{owner}/{repo}/pulls' \
-           -f head=$branch \
-           -f base=$prev \
-           -f title="$(git show origin/$branch -q --format=%s)" \
-           -f body="$(git show origin/$branch -q --format=%b)"
+    open_pr $branch $prev
   done
 )
 
