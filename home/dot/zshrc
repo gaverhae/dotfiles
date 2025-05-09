@@ -142,13 +142,15 @@ _rr() {
 compdef _rr rr
 
 open_pr() (
+  set -euo pipefail
   head=$1
   base=${2:-main}
-  gh api -XPOST '/repos/{owner}/{repo}/pulls' \
-         -f head=$head \
-         -f base=$base \
-         -f title="$(git show origin/$head -q --format=%s)" \
-         -f body="$(git show origin/$head -q --format=%b)"
+  resp=$(gh api -XPOST '/repos/{owner}/{repo}/pulls' \
+                -f head=$head \
+                -f base=$base \
+                -f title="$(git show origin/$head -q --format=%s)" \
+                -f body="$(git show origin/$head -q --format=%b)")
+  echo "Opened: $(echo $resp | jq -r .url)"
 )
 
 pick() (
