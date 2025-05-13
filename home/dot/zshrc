@@ -150,7 +150,7 @@ open_pr() (
          -f base=$base \
          -f title="$(git show origin/$head -q --format=%s)" \
          -f body="$(git show origin/$head -q --format=%b)" \
-         -q '.url'
+         -q '.html_url'
 )
 
 pick() (
