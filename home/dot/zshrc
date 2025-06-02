@@ -156,19 +156,21 @@ open_pr() (
 pick() (
   set -euo pipefail
   log=$(mktemp)
-  trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
   ret=$(git rev-parse --abbrev-ref HEAD)
   sha=$1
   remote_branch=$2
-  git checkout origin/main >>$log 2>&1
-  if git cherry-pick $sha >>$log 2>&1; then
-    git push origin HEAD:refs/heads/$remote_branch >>$log 2>&1
+  git checkout origin/main >$log 2>&1
+  if git cherry-pick $sha >$log 2>&1; then
+    git push origin HEAD:refs/heads/$remote_branch >$log 2>&1
     open_pr $remote_branch
   else
+    echo "cherry-pick failed, aborting."
+    echo
+    cat $log
+    echo
     git cherry-pick --abort
   fi
-  git checkout $ret >>$log 2>&1
-  trap - EXIT
+  git checkout $ret >$log 2>&1
 )
 
 fr() (
