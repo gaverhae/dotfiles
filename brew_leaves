@@ -2,14 +2,14 @@ age 1.2.1
 coreutils 9.7
 direnv 2.36.0
 fswatch 1.18.3
-gh 2.72.0
+gh 2.74.0
 git 2.49.0
 grep 3.12
-jq 1.7.1
+jq 1.8.0
 ncdu 2.8.2
 tmux 3.5a
 tree 2.2.1
-vim 9.1.1350
+vim 9.1.1400
 watch 4.0.5
 wget 1.25.0
 zsh 5.9
