@@ -105,6 +105,8 @@ EOF
 
 if [ "yes" = "$LINK_DEFAULT" ]; then
   ln "$DEFAULT_SRC" nix/src.json
+elif [ -f "$DEFAULT_SRC" ]; then
+  cp "$DEFAULT_SRC" nix/src.json
 else
   echo '{"branch":"nixpkgs-unstable","repo":"nixpkgs","owner":"NixOS"}' > nix/src.json
   nix-shell -p jq -p curl --run bin/update-nixpkgs
