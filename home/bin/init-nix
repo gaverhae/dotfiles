@@ -65,9 +65,9 @@ cat << 'EOF' > bin/update-nixpkgs
 set -euo pipefail
 DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
 
-branch=$(jq -r '.branch' $DIR/../nix/src.json)
-repo=$(jq -r '.repo' $DIR/../nix/src.json)
-owner=$(jq -r '.owner' $DIR/../nix/src.json)
+branch=$(jq -r '.branch' "$DIR"/../nix/src.json)
+repo=$(jq -r '.repo' "$DIR"/../nix/src.json)
+owner=$(jq -r '.owner' "$DIR"/../nix/src.json)
 
 commit=$(curl --silent \
               -H "Accept: application/vnd.github+json" \
@@ -87,7 +87,7 @@ jq -n \
    --arg commit $commit \
    --arg sha $archive_sha \
    '{$branch, $repo, $owner, $commit, $sha}' \
-   > $DIR/../nix/src.json
+   > "$DIR"/../nix/src.json
 EOF
 
 chmod +x bin/update-nixpkgs
