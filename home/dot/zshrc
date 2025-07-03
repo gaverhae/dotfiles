@@ -159,6 +159,7 @@ pick() (
   git checkout origin/main
   if git cherry-pick $sha; then
     git push origin HEAD:refs/heads/$remote_branch
+    open_pr $remote_branch
   else
     git cherry-pick --abort
   fi
