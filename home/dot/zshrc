@@ -175,6 +175,8 @@ fr() (
 )
 
 prs() (
+  log=$(mktemp)
+  trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
   n=0
   for c in $(git log --format=%h HEAD...origin/main | tac); do
     if [ "prs:skip" = "$(git show -q --format=%b $c)" ]; then
@@ -187,9 +189,10 @@ prs() (
     fi
     n=$(( n + 1 ))
     branch=gary-$n
-    git push origin ${c}:refs/heads/$branch
+    git push origin ${c}:refs/heads/$branch >$log 2>&1
     open_pr $branch $prev
   done
+  trap - EXIT
 )
 
 f=$HOME/.nix-profile/etc/profile.d/nix.sh; if [ -f $f ]; then . $f; fi
