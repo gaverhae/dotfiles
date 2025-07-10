@@ -247,7 +247,7 @@ autocmd BufNewFile,BufRead build.boot set filetype=clojure
 autocmd BufNewFile,BufRead *.edn set filetype=clojure
 " detect boot scripts based on filetype
 fun! s:DetectNode()
-    if getline(1) == '#!/usr/bin/env boot'
+    if getline(1) == '#!/usr/bin/env boot' || getline(1) == '#!/usr/bin/env bb'
         set ft=clojure
     endif
 endfun
