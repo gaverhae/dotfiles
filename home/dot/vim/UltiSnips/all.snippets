@@ -5,3 +5,23 @@ set -euo pipefail
 DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
 cd "$DIR"
 endsnippet
+
+snippet #! "babashka" b
+#!/usr/bin/env bb
+
+(ns t
+  (:require [babashka.fs :as fs]
+            [babashka.process :as p]))
+
+(defn -main
+  [dir & args]
+  (cond
+    :else (do (println "Unrecognized command:")
+              (prn args)
+              (System/exit 1))))
+
+(if (= *file* (System/getProperty "babashka.file"))
+  (apply -main
+         (fs/parent (fs/parent *file*))
+         *command-line-args*))
+endsnippet
