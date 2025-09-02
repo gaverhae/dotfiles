@@ -163,17 +163,36 @@ __random_token() (
   head -c 8 <(tr -dc A-Za-z0-9 < /dev/urandom)
 )
 
-branch_count() (
-  # I tend to have multiple remote branches per local branch. For a local
-  # branch X, this should return N where N is bigger than any existing one.
+__local_branch() (
   set -euo pipefail
   local_branch=$(git branch --show-current)
   if [ -z "$local_branch" ]; then
     echo "Not on a branch, using random token." >&2
-    __random_token
+    local_branch=$(__random_token)
+  fi
+  echo $local_branch
+)
+
+__branch_count() (
+  # I tend to have multiple remote branches per local branch. For a local
+  # branch X, this should return N where N is bigger than any existing one.
+  set -euo pipefail
+  local_branch=$1
+  git fetch
+  git branch -r | grep "origin/$local_branch-" | sed "s:origin/$local_branch-::" | sort -n | tail -1 | xargs || true
+)
+
+__remote_base() (
+  set -euo pipefail
+  local_branch=$1
+  n=$2
+  explicit_remote_base=$3
+  if [ -n "$explicit_remote_base" ]; then
+    echo $explicit_remote_base
+  elif [ -n "$n" ]; then
+    echo $local_branch-$n
   else
-    git fetch
-    git branch -r | grep "origin/$local_branch-" | sed "s:origin/$local_branch-::" | sort -n | tail -1 | xargs || true
+    echo main
   fi
 )
 
@@ -184,18 +203,12 @@ pick() (
   git fetch >$log 2>&1
   ret=$(git rev-parse --abbrev-ref HEAD)
   sha=$(git rev-parse ${1:-HEAD})
-  branch=$(git branch --show-current)
-  n=$(branch_count)
-  if [ -n "${2:-}" ]; then
-    remote_base=$2
-  elif [ -n "$n" ]; then
-    remote_base=$branch-$n
-  else
-    remote_base=main
-  fi
+  local_branch=$(__local_branch)
+  n=$(__branch_count $local_branch)
+  remote_base=$(__remote_base $local_branch "$n" "${2:-}")
   git checkout origin/$remote_base >$log 2>&1
   if git cherry-pick $sha >$log 2>&1; then
-    remote_branch=$branch-$(( n + 1 ))
+    remote_branch=$local_branch-$(( ++n ))
     git push origin HEAD:refs/heads/$remote_branch >$log 2>&1
     open_pr $remote_branch $remote_base
   else
@@ -221,24 +234,19 @@ prs() (
   log=$(mktemp)
   trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
   ret=$(git rev-parse --abbrev-ref HEAD)
-  base=${1:-main}
-  prefix=$(__random_token)
-  n=0
-  for c in $(git log --format=%h HEAD...origin/$base | tac); do
+  local_branch=$(__local_branch)
+  n=$(__branch_count $local_branch)
+  prev=$(__remote_base $local_branch "$n" "${1:-}")
+  for c in $(git log --format=%h HEAD...origin/$prev | tac); do
     if [ "prs:skip" = "$(git show -q --format=%b $c)" ]; then
       continue
     fi
-    if [ "$n" = "0" ]; then
-      prev=$base
-    else
-      prev=$prefix-$n
-    fi
-    n=$(( n + 1 ))
-    branch=$prefix-$n
+    remote_branch=$local_branch-$(( ++n ))
     git checkout origin/$prev >$log 2>&1
     git cherry-pick $c >$log 2>&1
-    git push origin HEAD:refs/heads/$branch >$log 2>&1
-    open_pr $branch $prev
+    git push origin HEAD:refs/heads/$remote_branch >$log 2>&1
+    open_pr $remote_branch $prev
+    prev=$remote_branch
   done
   git checkout $ret
   trap - EXIT
