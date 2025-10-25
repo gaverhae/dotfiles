@@ -98,7 +98,7 @@ _update() (
 )
 
 _show() (
-  while true; do go sync; sleep 3; git --no-pager diff; done
+  while true; do go sync; git --no-pager diff; sleep 60; done
 )
 
 _main() (
