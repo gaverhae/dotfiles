@@ -212,12 +212,14 @@ let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 
 let g:clojure_maxlines = 10000
 autocmd FileType clojure setlocal lispwords+=match
-autocmd FileType clojure setlocal lispwords+=mdo
+autocmd FileType clojure setlocal lispwords+=m-let
 autocmd FileType clojure setlocal lispwords+=form-to
 autocmd FileType clojure setlocal lispwords+=try
 autocmd FileType clojure setlocal lispwords+=vatch
 autocmd FileType clojure setlocal lispwords+=postvalk
 autocmd FileType clojure setlocal lispwords+=are
+autocmd FileType clojure setlocal lispwords+=go-loop
+autocmd FileType clojure setlocal lispwords+=macro
 let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let', '^match$']
 
 "Navigate to token
