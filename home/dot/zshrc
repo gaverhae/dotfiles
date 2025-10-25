@@ -183,6 +183,7 @@ prs() (
   log=$(mktemp)
   trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
   ret=$(git rev-parse --abbrev-ref HEAD)
+  prefix=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8)
   n=0
   for c in $(git log --format=%h HEAD...origin/main | tac); do
     if [ "prs:skip" = "$(git show -q --format=%b $c)" ]; then
@@ -191,10 +192,10 @@ prs() (
     if [ "$n" = "0" ]; then
       prev=main
     else
-      prev=gary-$n
+      prev=$prefix-$n
     fi
     n=$(( n + 1 ))
-    branch=gary-$n
+    branch=$prefix-$n
     git checkout origin/$prev >$log 2>&1
     git cherry-pick $c >$log 2>&1
     git push origin HEAD:refs/heads/$branch >$log 2>&1
