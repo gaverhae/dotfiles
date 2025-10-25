@@ -1,8 +1,6 @@
 age 1.2.1
-babashka 1.12.205
 coreutils 9.7
 direnv 2.37.0
-fswatch 1.18.3
 gh 2.74.2
 git 2.50.0
 grep 3.12
