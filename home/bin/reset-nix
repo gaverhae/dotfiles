@@ -47,4 +47,4 @@ echo "Installing fresh Nix"
   printf '64d\n230d\nw\n' | ed -s install
   ./install --no-daemon
 )
-#nix upgrade-nix
+nix upgrade-nix
