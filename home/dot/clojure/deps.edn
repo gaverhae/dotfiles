@@ -4,10 +4,12 @@
   :cider-clj {:extra-deps {org.clojure/clojure {:mvn/version "1.12.1"}
                            cider/cider-nrepl {:mvn/version "0.56.0"}
                            fipp/fipp {:mvn/version "0.6.27"}}
-              :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
+              :extra-paths ["test"]
+              :main-opts ["-m" "nrepl.cmdline" "-i" "--middleware" "[cider.nrepl/cider-middleware]"]}
   :cider-cljs {:extra-deps {org.clojure/clojure {:mvn/version "1.12.1"}
                             org.clojure/clojurescript {:mvn/version "1.12.42"}
                             cider/cider-nrepl {:mvn/version "0.56.0"}
                             cider/piggieback {:mvn/version "0.6.0"}}
+               :extra-paths ["test"]
                :main-opts ["-m" "nrepl.cmdline" "--middleware"
                            "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]"]}}}
