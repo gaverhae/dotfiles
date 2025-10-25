@@ -249,6 +249,7 @@ prs() (
     prev=$remote_branch
   done
   git checkout $ret
+  git rebase origin/$remote_branch
   trap - EXIT
 )
 
