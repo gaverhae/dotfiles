@@ -182,8 +182,9 @@ pick() (
 
 fr() (
   set -euo pipefail
+  base=${1:-main}
   git fetch
-  git rebase origin/main
+  git rebase origin/$base
 )
 
 prs() (
