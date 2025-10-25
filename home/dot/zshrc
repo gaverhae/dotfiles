@@ -156,6 +156,7 @@ open_pr() (
 pick() (
   set -euo pipefail
   log=$(mktemp)
+  trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
   ret=$(git rev-parse --abbrev-ref HEAD)
   sha=$1
   remote_branch=$2
@@ -171,6 +172,7 @@ pick() (
     git cherry-pick --abort
   fi
   git checkout $ret >$log 2>&1
+  trap - EXIT
 )
 
 fr() (
