@@ -1,4 +1,4 @@
-{:user {:plugins [[cider/cider-nrepl "0.57.0"]
+{:user {:plugins [[cider/cider-nrepl "0.58.0"]
                   [lein-ancient "1.0.0-RC3"]
                   [lein-pprint "1.3.2"]
                   [com.jakemccrary/lein-test-refresh "0.26.0"]]}
