@@ -6,7 +6,7 @@ git 2.52.0_1
 grep 3.12
 jq 1.8.1
 ncdu 2.9.2
-tmux 3.6a
+tmuxp 1.64.0
 tree 2.2.1
 vim 9.1.2100
 watch 4.0.6
