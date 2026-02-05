@@ -163,16 +163,39 @@ __random_token() (
   head -c 8 <(tr -dc A-Za-z0-9 < /dev/urandom)
 )
 
+branch_count() (
+  # I tend to have multiple remote branches per local branch. For a local
+  # branch X, this should return N where N is bigger than any existing one.
+  set -euo pipefail
+  local_branch=$(git branch --show-current)
+  if [ -z "$local_branch" ]; then
+    echo "Not on a branch, using random token." >&2
+    __random_token
+  else
+    git fetch
+    git branch -r | grep "origin/$local_branch-" | sed "s:origin/$local_branch-::" | sort -n | tail -1 | xargs || true
+  fi
+)
+
 pick() (
   set -euo pipefail
   log=$(mktemp)
   trap "echo 'Something went wrong. Logs of last step:'; cat $log" EXIT
+  git fetch >$log 2>&1
   ret=$(git rev-parse --abbrev-ref HEAD)
   sha=$(git rev-parse ${1:-HEAD})
-  remote_base=${2:-main}
+  branch=$(git branch --show-current)
+  n=$(branch_count)
+  if [ -n "${2:-}" ]; then
+    remote_base=$2
+  elif [ -n "$n" ]; then
+    remote_base=$branch-$n
+  else
+    remote_base=main
+  fi
   git checkout origin/$remote_base >$log 2>&1
   if git cherry-pick $sha >$log 2>&1; then
-    remote_branch=$(__random_token)
+    remote_branch=$branch-$(( n + 1 ))
     git push origin HEAD:refs/heads/$remote_branch >$log 2>&1
     open_pr $remote_branch $remote_base
   else
