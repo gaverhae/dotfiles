@@ -17,7 +17,7 @@ zshrc, which is managed by this repo.
 
 Open Safari and go to [brew.sh](https://brew.sh); copy-paste the "Install
 Homebrew" command. It requires `sudo` privileges, and will not only install
-bomebrew itself in `/opt/homebrew`, it will also take care of installing the
+homebrew itself in `/opt/homebrew`, it will also take care of installing the
 Xcode Command Line Tools.
 
 In the "end of install" instructions, Homebrew will tell you to run a few
