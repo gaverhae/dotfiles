@@ -1,4 +1,4 @@
 {
-  "origin": "https://github.com/tpope/vim-sexp-mappings-for-regular-people.git",
+  "origin": "git@github.com:tpope/vim-sexp-mappings-for-regular-people",
   "version": "20250815.12.4debb74b"
 }
