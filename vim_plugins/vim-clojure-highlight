@@ -1,4 +1,4 @@
 {
-  "origin": "https://github.com/guns/vim-clojure-highlight.git",
+  "origin": "git@github.com:guns/vim-clojure-highlight.git",
   "version": "20150705.28.9ac6cb8f"
 }
