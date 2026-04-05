@@ -294,3 +294,7 @@ let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 let g:UltiSnipsEditSplit="horizontal"
 
 autocmd FileType yaml set indentexpr=off | set autoindent
+
+" Restore arrow keys to move cursor during wildmenu completion
+cnoremap <expr> <Left>  wildmenumode() ? "\<C-Y>\<Left>" : "\<Left>"
+cnoremap <expr> <Right> wildmenumode() ? "\<C-Y>\<Right>" : "\<Right>"
