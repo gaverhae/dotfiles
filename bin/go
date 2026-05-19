@@ -16,6 +16,9 @@ sync     Replaces files in this repos with links to \$HOME.
 show     Start a loop that shows the diffs between current machine state and
          dotfiles target state.
 update   Updates everything, or at least tries to.
+install  ⚠️ ⚠️ ⚠️   Install the environment.  ⚠️ ⚠️ ⚠️
+         Overwrites any existing files. Only meant for brand new machines, and
+         even then, be careful.
 EOF
 )
 
@@ -101,9 +104,56 @@ _show() (
   while true; do go sync; git --no-pager diff; sleep 60; done
 )
 
+_install() (
+  # Required tools
+  _check_binary nix
+  _check_binary brew
+
+  # brew packages
+  brew update
+  while IFS= read -r line; do
+    formula=$(echo "$line" | cut -f1 -d' ')
+    version=$(echo "$line" | cut -f2 -d' ')
+    echo brew install $formula@$version
+    brew install $formula
+  done < brew_leaves
+  if [ $(uname) = Darwin ]; then
+    while IFS= read -r line; do
+      formula=$(echo "$line" | cut -f1 -d' ')
+      version=$(echo "$line" | cut -f2 -d' ')
+      echo brew install --cask $formula@$version
+      brew install --cask $formula
+    done < brew_caskss
+  fi
+
+  # Configuration files
+  cd home
+  for file_in_repo in $(find . -type f); do
+    file_in_home=$HOME/${file_in_repo/"/dot/"/}
+    mkdir -p $(dirname $file_in_home)
+    if [ -f $file_in_home ]; then
+      echo "file '$file_in_home' exists; skipping"
+      continue
+    fi
+    ln $file_in_repo $file_in_home
+  done
+  cd ..
+
+  # Vim plugins
+  dir_in_home=$HOME/.vim/bundle
+  mkdir -p $dir_in_home
+  dir_in_repo=vim_plugins
+  for plugin in $(ls $dir_in_repo); do
+    origin=$(jq -r '.origin' $dir_in_repo/$plugin)
+    version=$(jq -r '.version | split(".")[2]' $dir_in_repo/$plugin)
+    git clone $origin $dir_in_home/$plugin
+    ( cd $dir_in_home/$plugin; git reset --hard $version )
+  done
+)
+
 _main() (
   case "${1:-}" in
-    help|sync|show|update)
+    help|sync|show|update|install)
       _$1
       ;;
     *)
