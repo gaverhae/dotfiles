@@ -1,4 +1,4 @@
 {
-  "origin": "git@github.com:hashivim/vim-terraform.git",
+  "origin": "https://github.com/hashivim/vim-terraform.git",
   "version": "20250524.340.520498fa"
 }
