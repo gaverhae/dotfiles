@@ -132,8 +132,8 @@ _install() (
     file_in_home=$HOME/${file_in_repo/"/dot/"/}
     mkdir -p $(dirname $file_in_home)
     if [ -f $file_in_home ]; then
-      echo "file '$file_in_home' exists; skipping"
-      continue
+      new_name=$file_in_home_$(sha256sum $file_in_home | cut -f1 -d' ')
+      mv $file_in_home $new_name
     fi
     ln $file_in_repo $file_in_home
   done
