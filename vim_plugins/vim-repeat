@@ -1,4 +1,4 @@
 {
-  "origin": "git@github.com:tpope/vim-repeat.git",
+  "origin": "https://github.com/tpope/vim-repeat.git",
   "version": "20240708.55.65846025"
 }

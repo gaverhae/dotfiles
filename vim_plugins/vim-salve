@@ -1,4 +1,4 @@
 {
-  "origin": "git@github.com:tpope/vim-salve.git",
+  "origin": "https://github.com/tpope/vim-salve.git",
   "version": "20240707.38.92f65536"
 }
