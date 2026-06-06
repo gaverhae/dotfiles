@@ -123,12 +123,15 @@ _install() (
       version=$(echo "$line" | cut -f2 -d' ')
       echo brew install --cask $formula@$version
       brew install --cask $formula
-    done < brew_caskss
+    done < brew_casks
   fi
 
   # Configuration files
   cd home
   for file_in_repo in $(find . -type f); do
+    # find returns lines that look like
+    # ./dot/zshrc
+    # so removing `/dot/` (with the `${var/removed-regex}` syntax) yields `.zshrc`
     file_in_home=$HOME/${file_in_repo/"/dot/"/}
     mkdir -p $(dirname $file_in_home)
     if [ -f $file_in_home ]; then
