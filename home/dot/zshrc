@@ -141,10 +141,24 @@ _rr() {
 }
 compdef _rr rr
 
+__gh_available() (
+  command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1
+)
+
+__github_repo_url() (
+  set -euo pipefail
+  git remote get-url origin | sed -E 's#^git@github\.com:#https://github.com/#; s#\.git$##'
+)
+
 open_pr() (
   set -euo pipefail
   head=$1
   base=$2
+  if ! __gh_available; then
+    echo "gh unavailable or not authenticated; open the PR manually:" >&2
+    echo "$(__github_repo_url)/compare/$base...$head"
+    return 0
+  fi
   resp=$(gh api -XPOST '/repos/{owner}/{repo}/pulls' \
                 -f head=$head \
                 -f base=$base \
