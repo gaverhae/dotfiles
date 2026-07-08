@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dotfiles — Move machine tools to nix-env</title>
+<style>
+  :root {
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --accent: #7a3b8f;
+    --bg: #fdfcfa;
+    --panel: #f4f0ea;
+    --border: #ddd5c8;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    line-height: 1.55;
+  }
+  h1 { font-size: 1.7rem; border-bottom: 3px solid var(--accent); padding-bottom: .4rem; }
+  h2 { font-size: 1.25rem; color: var(--accent); margin-top: 2.2rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+  code, pre {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .85em;
+    background: var(--panel);
+    border-radius: 4px;
+  }
+  code { padding: .1em .35em; }
+  pre { padding: .8rem 1rem; overflow-x: auto; border: 1px solid var(--border); }
+  pre code { background: none; padding: 0; }
+  .note { background: var(--panel); border-left: 4px solid var(--accent); padding: .6rem 1rem; margin: 1rem 0; }
+  .muted { color: var(--muted); }
+  li { margin: .3rem 0; }
+</style>
+</head>
+<body>
+
+<h1>Move machine tools to nix-env</h1>
+<p class="muted">Replace Homebrew's <code>brew_leaves</code> (CLI tools) with a pinned Nix profile, following the pattern already proven by <code>claude.nix</code>/<code>bin/setup-vm</code> in the clautilde repo. Homebrew's remaining job shrinks to GUI casks on macOS; Linux machines drop Homebrew entirely.</p>
+
+<h2 id="next">Next up</h2>
+<ol>
+  <li><strong>Resolve the <code>home/dot/</code> path-mapping wrinkle before writing anything.</strong> <code>bin/go</code>'s sync walk deletes the literal substring <code>/dot/</code> from each repo-relative path, which folds into a leading dot on the <code>$HOME</code> side (<code>home/dot/zshrc</code> → <code>$HOME/.zshrc</code>, <code>home/dot/lein/profiles.clj</code> → <code>$HOME/.lein/profiles.clj</code>). Applied naively, <code>home/dot/tools.nix</code> would land at <code>$HOME/.tools.nix</code> (hidden) — not the visible <code>$HOME/tools.nix</code> that was the actual goal ("a well-known location that reminds me this is where I install new tools"). Decide: accept the hidden dotted path, or add a small special case to the sync mechanism for top-level non-dotted files. This decides the exact path every other step below refers to.</li>
+  <li><strong>Verify nixpkgs coverage for the current <code>brew_leaves</code> list</strong>: <code>age</code>, <code>coreutils</code>, <code>direnv</code>, <code>gh</code>, <code>git</code>, <code>grep</code>, <code>jq</code>, <code>ncdu</code>, <code>tmuxp</code>, <code>tree</code>, <code>vim</code>, <code>watch</code>, <code>wget</code>, <code>zsh</code>. All expected to exist in nixpkgs, but not yet checked one by one.</li>
+  <li><strong>Write <code>home/dot/tools.nix</code></strong> (path per decision above): a <code>pkgs.buildEnv</code> aggregating the list from step 2, pinned via a dedicated pin — mirror <code>nix/nixpkgs.nix</code> + <code>nix/src.json</code> as <code>home/dot/nix/nixpkgs.nix</code> + <code>home/dot/nix/src.json</code> (syncs to a sibling <code>$HOME/.nix/</code> or <code>$HOME/nix/</code> per the same path decision), so the relative <code>import ./nix/nixpkgs.nix</code> inside <code>tools.nix</code> resolves once synced to <code>$HOME</code>. This pin is independent of both <code>dotfiles/nix/src.json</code> (project shells) and clautilde's own <code>nix/src.json</code> (claude-code) — three separate pins is expected and fine, since <code>nix-env -i</code> is additive across differently-named profile entries.</li>
+  <li><strong>Update <code>bin/go</code></strong>: replace the <code>brew leaves</code>/formula install-and-loop logic in <code>_sync</code>/<code>_install</code>/<code>_update</code> with <code>nix-env -if $HOME/tools.nix</code> (name and exact path per step 1). Keep the cask loop (<code>brew_casks</code>) Darwin-only, as it already is. Make the <code>_check_binary brew</code> guard conditional so Linux runs never require Homebrew at all.</li>
+  <li><strong>Add a drift tripwire</strong>: capture <code>nix-env -q</code> to a tracked file (parallel to how <code>brew_leaves</code> is captured today) as part of <code>go sync</code>, so an accidental ad hoc <code>nix-env -i some-package</code> shows up as a <code>git diff</code> next sync instead of silently persisting forever (reapplying <code>tools.nix</code> only replaces the <code>tools.nix</code>-named entry — it does not detect or remove unrelated stray entries).</li>
+  <li><strong>Update <code>home/bin/reset-nix</code></strong>:
+    <ul>
+      <li>Append reprovisioning as the last step: after the fresh Nix install, run <code>nix-env -if $HOME/tools.nix</code> so the script stays a genuine one-shot "wipe &amp; restore" for machine tools too, not just project shells (which direnv already rebuilds lazily on <code>cd</code> — profile tools have no equivalent lazy trigger).</li>
+      <li>Add the safety net for the login shell: <code>trap fallback EXIT</code> installed near the top (after <code>set -euo pipefail</code>), disarmed with <code>trap - EXIT</code> only after the reprovision line succeeds. <code>fallback()</code> should be guarded to only act when the current shell is actually broken, so an unrelated early failure (e.g. a network blip during the Nix download, before the profile is even touched) doesn't needlessly clobber a still-working profile:
+<pre><code>fallback() {
+  if [ ! -x "$HOME/.nix-profile/bin/zsh" ]; then
+    rm -f "$HOME/.nix-profile"
+    mkdir -p "$HOME/.nix-profile/bin"
+    ln -s /bin/bash "$HOME/.nix-profile/bin/zsh"
+  fi
+}
+trap fallback EXIT</code></pre>
+      A crash mid-script leaves new terminals with a loud, unmistakable plain-bash session (no rc files sourced) instead of "command not found: zsh" or a failed login shell. The currently-running terminal is never affected either way, since Unix keeps an already-executing binary alive after its file is unlinked.</li>
+    </ul>
+  </li>
+  <li><strong>Migrate the login shell</strong>: <code>chsh</code> to <code>$HOME/.nix-profile/bin/zsh</code> instead of <code>/opt/homebrew/bin/zsh</code>, and add that literal path to <code>/etc/shells</code> once. This is a stable path through the Nix profile/generation symlink indirection — it silently repoints at whatever <code>zsh</code> version <code>tools.nix</code> last installed, so it never needs <code>chsh</code> rerun on ordinary version bumps. This is a manual, per-machine action (like the existing <code>chsh</code> step in the README), not something a script does for you.</li>
+  <li><strong>Update <code>README.md</code></strong>: brew install step becomes cask-only on macOS and is dropped entirely from the Linux path; new <code>chsh</code> target; mention <code>tools.nix</code> where <code>brew_leaves</code> is mentioned today.</li>
+  <li><strong>Roll out per machine, manually, as touched.</strong> No generic upgrade script — each machine gets brought up to the new model by hand when it's next worked on, consistent with how this repo already treats machine setup.</li>
+</ol>
+
+<h2 id="non-goals">Non-goals</h2>
+<ul>
+  <li><strong>No home-manager.</strong> Considered and explicitly rejected: far larger surface (thousands of contributors, hundreds of files) than this repo's current hand-written, fully-understood scale justifies. The <code>tools.nix</code> + <code>nix-env</code> approach gets the declarative-list property that mattered without the adoption cost.</li>
+  <li><strong>Casks stay on Homebrew.</strong> Nixpkgs' macOS GUI app support (Dock/Spotlight/LaunchServices integration) is patchy; not worth fighting for <code>brew_casks</code>' short list (iTerm2, MacVim, Obsidian, QLMarkdown, Rectangle, syntax-highlight, Transmission, VLC).</li>
+</ul>
+
+</body>
+</html>
