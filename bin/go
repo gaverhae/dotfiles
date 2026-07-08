@@ -113,16 +113,12 @@ _install() (
   brew update
   while IFS= read -r line; do
     formula=$(echo "$line" | cut -f1 -d' ')
-    version=$(echo "$line" | cut -f2 -d' ')
-    echo brew install $formula@$version
-    brew install $formula
+    brew install $formula < /dev/null
   done < brew_leaves
   if [ $(uname) = Darwin ]; then
     while IFS= read -r line; do
       formula=$(echo "$line" | cut -f1 -d' ')
-      version=$(echo "$line" | cut -f2 -d' ')
-      echo brew install --cask $formula@$version
-      brew install --cask $formula
+      brew install --cask $formula < /dev/null
     done < brew_casks
   fi
 
