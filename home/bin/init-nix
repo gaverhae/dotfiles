@@ -2,20 +2,21 @@
 
 set -euo pipefail
 
-LINK_DEFAULT=no
-DEFAULT_SRC="$HOME/.default/nixpkgs.json"
-if [ "${1:-}" = "--default" ] && [ -f "$DEFAULT_SRC" ]; then
-  LINK_DEFAULT=yes
+DOTFILES_RAW="https://raw.githubusercontent.com/gaverhae/dotfiles/refs/heads/main"
+
+SYNC_FLAG=
+if [ "${1:-}" = "--latest" ]; then
+  SYNC_FLAG=--latest
 fi
 
-if [ -e .envrc ] || [ -e .envrc.private ] || [ -e nix ] || [ -e shell.nix ] || [ -e bin/update-nixpkgs ]; then
+if [ -e .envrc ] || [ -e .envrc.private ] || [ -e nix ] || [ -e shell.nix ] || [ -e bin/sync-env ]; then
   echo "Conflict. Aborting."
   exit 1
 fi
 
 cat <<'EOF' > shell.nix
 let
-  pkgs = import ./nix/nixpkgs.nix {};
+  pkgs = import ./nix/nixpkgs.nix;
   getFlake = url: (builtins.getFlake url).packages.${pkgs.system}.default;
 in
 pkgs.mkShell {
@@ -59,55 +60,4 @@ EOF
 echo .envrc.private >> .gitignore
 
 mkdir -p bin
-cat << 'EOF' > bin/update-nixpkgs
-#!/usr/bin/env bash
-
-set -euo pipefail
-DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
-
-branch=$(jq -r '.branch' "$DIR"/../nix/src.json)
-repo=$(jq -r '.repo' "$DIR"/../nix/src.json)
-owner=$(jq -r '.owner' "$DIR"/../nix/src.json)
-
-commit=$(curl --silent \
-              -H "Accept: application/vnd.github+json" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/repos/$owner/$repo/branches/$branch \
-         | jq -r .commit.sha)
-
-archive_sha=$(nix-prefetch-url \
-                https://github.com/$owner/$repo/archive/$commit.tar.gz \
-                --unpack \
-                2>/dev/null)
-
-jq -n \
-   --arg branch $branch \
-   --arg repo $repo \
-   --arg owner $owner \
-   --arg commit $commit \
-   --arg sha $archive_sha \
-   '{$branch, $repo, $owner, $commit, $sha}' \
-   > "$DIR"/../nix/src.json
-EOF
-
-chmod +x bin/update-nixpkgs
-
-mkdir nix
-cat << 'EOF' > nix/nixpkgs.nix
-let
-  spec = builtins.fromJSON (builtins.readFile ./src.json);
-in
-  import (builtins.fetchTarball {
-    url = "https://github.com/${spec.owner}/${spec.repo}/archive/${spec.commit}.tar.gz";
-    sha256 = spec.sha;
-  })
-EOF
-
-if [ "yes" = "$LINK_DEFAULT" ]; then
-  ln "$DEFAULT_SRC" nix/src.json
-elif [ -f "$DEFAULT_SRC" ]; then
-  cp "$DEFAULT_SRC" nix/src.json
-else
-  echo '{"branch":"nixpkgs-unstable","repo":"nixpkgs","owner":"NixOS"}' > nix/src.json
-  nix-shell -p jq -p curl --run bin/update-nixpkgs
-fi
+nix-shell -p jq -p curl --run "curl --silent --fail $DOTFILES_RAW/bin/sync-env -o bin/sync-env && chmod +x bin/sync-env && bin/sync-env $SYNC_FLAG"

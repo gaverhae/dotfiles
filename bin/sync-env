@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DOTFILES_RAW="https://raw.githubusercontent.com/gaverhae/dotfiles/refs/heads/main"
+
+MODE=dotfiles
+if [ "${1:-}" = "--latest" ]; then
+  MODE=latest
+fi
+
+SELF="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)/$(basename -- "${BASH_SOURCE[0]}")"
+SELF_TMP="$(dirname -- "$SELF")/.sync-env.$$"
+trap 'rm -f "$SELF_TMP"' EXIT
+curl --silent --fail "$DOTFILES_RAW/bin/sync-env" > "$SELF_TMP"
+chmod +x "$SELF_TMP"
+mv "$SELF_TMP" "$SELF"
+
+mkdir -p nix
+
+curl --silent --fail "$DOTFILES_RAW/nix/nixpkgs.nix" > nix/nixpkgs.nix
+
+if [ "$MODE" = "dotfiles" ]; then
+  curl --silent --fail "$DOTFILES_RAW/nix/src.json" > nix/src.json
+else
+  if [ -f nix/src.json ]; then
+    branch=$(jq -r '.branch' nix/src.json)
+    repo=$(jq -r '.repo' nix/src.json)
+    owner=$(jq -r '.owner' nix/src.json)
+  else
+    branch=nixpkgs-unstable
+    repo=nixpkgs
+    owner=NixOS
+  fi
+
+  branch_info=$(curl --silent --fail \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                https://api.github.com/repos/$owner/$repo/branches/$branch)
+
+  commit=$(echo "$branch_info" | jq -r .commit.sha)
+  date=$(echo "$branch_info" | jq -r .commit.commit.committer.date)
+
+  archive_sha=$(nix-prefetch-url \
+                  https://github.com/$owner/$repo/archive/$commit.tar.gz \
+                  --unpack \
+                  2>/dev/null)
+
+  jq -n \
+     --arg branch $branch \
+     --arg repo $repo \
+     --arg owner $owner \
+     --arg commit $commit \
+     --arg date $date \
+     --arg sha $archive_sha \
+     '{$branch, $repo, $owner, $commit, $date, $sha}' \
+     > nix/src.json
+fi
+
+echo "nix/src.json: $(jq -r '"\(.owner)/\(.repo)@\(.branch) \(.commit) (\(.date))"' nix/src.json)"
