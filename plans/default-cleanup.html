@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dotfiles — Remove the old default-pin sharing mechanism</title>
+<style>
+  :root {
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --accent: #7a3b8f;
+    --bg: #fdfcfa;
+    --panel: #f4f0ea;
+    --border: #ddd5c8;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    line-height: 1.55;
+  }
+  h1 { font-size: 1.7rem; border-bottom: 3px solid var(--accent); padding-bottom: .4rem; }
+  h2 { font-size: 1.25rem; color: var(--accent); margin-top: 2.2rem; }
+  code, pre {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .85em;
+    background: var(--panel);
+    border-radius: 4px;
+  }
+  code { padding: .1em .35em; }
+  pre { padding: .8rem 1rem; overflow-x: auto; border: 1px solid var(--border); }
+  pre code { background: none; padding: 0; }
+  .muted { color: var(--muted); }
+  li { margin: .3rem 0; }
+</style>
+</head>
+<body>
+
+<h1>Remove the old default-pin sharing mechanism</h1>
+<p class="muted"><code>#148</code> replaced the local <code>$HOME/.default/nixpkgs.json</code> hardlink-sharing scheme with <code>sync-env</code> fetching the pin straight from the dotfiles repo on GitHub, and already stopped <code>home/bin/init-nix</code> from using it — but left the old plumbing itself in place.</p>
+
+<h2 id="next">Next up</h2>
+<ol>
+  <li><strong>Delete <code>home/dot/default/nixpkgs.json</code>.</strong> No remaining producer or consumer: <code>init-nix</code> no longer writes or links it since <code>#148</code>.</li>
+  <li><strong>Delete <code>home/bin/nix-default</code>.</strong> Its only purpose was linking a project's <code>nix/src.json</code> to <code>$HOME/.default/nixpkgs.json</code>; the <code>--default</code> flag that called it was dropped from <code>init-nix</code> in the same PR.</li>
+  <li><strong>Fix <code>bin/go</code>'s <code>_update</code></strong>: it still calls the bareword <code>update-nixpkgs</code>, which no longer exists — <code>#148</code> renamed it to <code>sync-env</code> (and changed its default behavior to fetch dotfiles' own already-committed pin rather than query nixpkgs directly). Replace with <code>sync-env --latest</code> to keep advancing the pin on <code>go update</code>.</li>
+  <li><strong>On any machine you touch, manually <code>rm -rf $HOME/.default</code>.</strong> Deleting the repo side of a hardlink doesn't remove the machine's copy, and <code>go sync</code> won't clean up a file it no longer manages.</li>
+</ol>
+
+</body>
+</html>
