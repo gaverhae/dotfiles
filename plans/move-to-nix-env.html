@@ -34,7 +34,6 @@
   code { padding: .1em .35em; }
   pre { padding: .8rem 1rem; overflow-x: auto; border: 1px solid var(--border); }
   pre code { background: none; padding: 0; }
-  .note { background: var(--panel); border-left: 4px solid var(--accent); padding: .6rem 1rem; margin: 1rem 0; }
   .muted { color: var(--muted); }
   li { margin: .3rem 0; }
 </style>
@@ -43,8 +42,6 @@
 
 <h1>Move machine tools to nix-env</h1>
 <p class="muted">Replace Homebrew's <code>brew_leaves</code> (CLI tools) with a pinned Nix profile, following the pattern already proven by <code>nix/claude.nix</code>/<code>bin/setup-vm</code> in the clautilde repo: a <code>buildEnv</code> installed via <code>nix-env -if</code>, using the repo's one existing nixpkgs pin — no separate pin for tools. Homebrew's remaining job shrinks to GUI casks on macOS; Linux machines drop Homebrew entirely.</p>
-
-<p class="note">Depends on <code>plans/default-cleanup.html</code> landing first: this plan's <code>bin/go</code> step builds on <code>sync-env</code> already being correctly wired.</p>
 
 <h2 id="next">Next up</h2>
 <ol>
@@ -87,7 +84,7 @@ pkgs.buildEnv {
       <li>In <code>_sync</code>/<code>_install</code>, replace the <code>brew leaves</code> capture-and-loop with <code>nix-env -if "$DIR/home/tools.nix"</code>. The repo path works identically to the synced <code>$HOME/tools.nix</code> now that the pin lives alongside both, but <code>bin/go</code> already has <code>$DIR</code> reliably available and it sidesteps a sequencing dependency (the config-file sync loop, which creates the <code>$HOME</code> hardlink, would otherwise need to run before this line, not after).</li>
       <li>Make the <code>_check_binary brew</code> guard Darwin-only in both <code>_sync</code> and <code>_install</code>, and keep the cask capture/install/reinstall loops Darwin-only as they already are.</li>
       <li>In <code>_update</code>, gate the two remaining unconditional brew calls — <code>brew update && brew upgrade</code> and <code>brew reinstall vim</code> — behind the same Darwin check as the cask loop, so a Linux <code>go update</code> never touches brew at all.</li>
-      <li>In <code>_update</code>'s tools step (the <code>update-nixpkgs</code> line, fixed to <code>sync-env --latest</code> by <code>plans/default-cleanup.html</code>), add an explicit reapply right after it, before the trailing <code>go sync</code> — bumping <code>nix/src.json</code> only changes what a <em>future</em> install would pull, it doesn't upgrade already-installed profile packages:
+      <li>In <code>_update</code>'s tools step, add an explicit reapply after <code>sync-env --latest</code> and before the trailing <code>go sync</code> — bumping <code>nix/src.json</code> only changes what a <em>future</em> install would pull, it doesn't upgrade already-installed profile packages:
 <pre><code>  # tools
   sync-env --latest
   nix-env -if "$DIR/home/tools.nix"
