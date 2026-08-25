@@ -96,7 +96,7 @@ _update() (
   brew reinstall vim
   # tools
   #nix upgrade-nix
-  update-nixpkgs
+  sync-env --latest
   go sync
 )
 
