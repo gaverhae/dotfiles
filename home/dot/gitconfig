@@ -17,6 +17,7 @@
     hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
     ca = commit --amend --reset-author --no-edit
     pf = push --force-with-lease
+    rpd = rebase --committer-date-is-author-date --keep-empty
 [push]
     default = current
     autoSetupRemote = true
